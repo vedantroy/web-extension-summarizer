@@ -1,0 +1,15 @@
+html, body {
+  width: 300px;
+}
+
+.summary-button {
+  width: 100%;
+  padding: 4px;
+  font-size: 1.5em;
+  text-align: center;
+  cursor: pointer;
+}
+
+.summary-button:hover {
+  background-color: #CFF2F2;
+}
