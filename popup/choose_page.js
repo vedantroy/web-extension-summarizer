@@ -10,7 +10,7 @@ document.addEventListener("click", e => {
 });
 
 
-function returnSummaryV2(summaryLength) {
+function returnSummary(summaryLength) {
     browser.tabs.query({ active: true, currentWindow: true })
         .then(tabs => {
 
