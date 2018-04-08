@@ -69,43 +69,57 @@ const returnSummary = function(summaryLength) {
                         const summaryToken = nonTokenResponseText.match(/TOKEN=(.*?)&/);
                         const summaryTokenCompiledURL = 'https://smmry.com/sm_portal.php?&SM_TOKEN=' + summaryToken[1] + '&SM_POST_SAVE=0&SM_REDUCTION=-1&SM_CHARACTER=-1&SM_LENGTH=' + summaryLength.toString() + '&SM_URL=' + activeTabURL;
 
-                        browser.tabs.create({ url: summaryTokenCompiledURL });
+                       browser.tabs.create({ url: summaryTokenCompiledURL });
 
                         fetch(summaryTokenCompiledURL).then((tokenSummaryResponse) => tokenSummaryResponse.text())
-                            .then(tokenResponseText => {
+                            .then(tokenResponseText_initial => {
 
-                            	//tokenResponseText = "randomtext[SM_g]Bad[SM_h][SM_a][SM_g]grammar[SM_h][SM_b][SM_g]example's[SM_h]";
+                            	const tokenResponseText_fixedPeriods = tokenResponseText_initial.replace(/(\[SM_g].*?)(\[SM_h])([.])/g, "$1.$2");
+                            	const tokenResponseText_fixedCommas = tokenResponseText_fixedPeriods.replace(/(\[SM_g].*?)(\[SM_h])(,)/g, "$1,$2");
 
-                                const summaryRegexPattern = /\[SM_g](.*?)\[SM_h]/g;
-                                var match;
+                            	const wordCompilationRegex = /\[SM_g](.*?)\[SM_h]/g;
+                                var wordRegexResponse;
 
                                 var summary = "";
 
                                 do {
-                                    match = summaryRegexPattern.exec(tokenResponseText);
-                                    if (match) {
-                                        summary += match[1] + " ";
+                                    wordRegexResponse = wordCompilationRegex.exec(tokenResponseText_fixedCommas);
+                                    if (wordRegexResponse) {
+                                        summary += wordRegexResponse[1] + " ";
                                     }
-                                } while (match);
+                                } while (wordRegexResponse);
 
-                                //Replace all &#039; with apostrophe
+                                //Replace all &#039; with apostrophe. This is only a ***temporary*** fix b/c doesn't work with other quirky characters
                                 summary = summary.replace(/&#039;/g, '\'');
 
-                                resolve(returnSummaryResponse(summary, tokenResponseText));
+                                resolve(returnSummaryResponse(summary, tokenResponseText_initial));
                             });
                     });
             });
     });
 };
 
-function returnSummaryResponse(summary, tokenResponseText) {
+function returnSummaryResponse(summary, rawTokenText) {
     if (summary != "") {
         return { status: 'no-error', summary: summary };
-    } else if (tokenResponseText.includes('THE PAGE IS IN AN UNRECOGNISABLE FORMAT')) {
+    } else if (rawTokenText.includes('THE PAGE IS IN AN UNRECOGNISABLE FORMAT')) {
         return { status: 'Error - Unrecognisable Format', summary: null }
-    } else if (tokenResponseText.includes('SOURCE IS TOO SHORT')) {
+    } else if (rawTokenText.includes('SOURCE IS TOO SHORT')) {
         return { status: 'Error - Too Short', summary: null };
     } else {
         return { status: 'Error - Unknown Error', summary: null };
     }
+}
+
+function download(filename, text) {
+  var element = document.createElement('a');
+  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+  element.setAttribute('download', filename);
+
+  element.style.display = 'none';
+  document.body.appendChild(element);
+
+  element.click();
+
+  document.body.removeChild(element);
 }
