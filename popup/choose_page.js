@@ -60,7 +60,6 @@ const returnSummary = function(summaryLength) {
 
                 const activeTabURL = tabs[0].url;
                 const nonTokenURL = 'https://smmry.com/' + activeTabURL + '#&SM_LENGTH=' + summaryLength.toString();
-                //console.log('URL: ' + nonTokenURL)
 
                 fetch(nonTokenURL)
                     .then((nonTokenResponse) => nonTokenResponse.text())
@@ -74,8 +73,7 @@ const returnSummary = function(summaryLength) {
                         fetch(summaryTokenCompiledURL).then((tokenSummaryResponse) => tokenSummaryResponse.text())
                             .then(tokenResponseText_initial => {
 
-                            	const tokenResponseText_fixedPeriods = tokenResponseText_initial.replace(/(\[SM_g].*?)(\[SM_h])([.])/g, "$1.$2");
-                            	const tokenResponseText_fixedCommas = tokenResponseText_fixedPeriods.replace(/(\[SM_g].*?)(\[SM_h])(,)/g, "$1,$2");
+                            	const tokenResponseText_fixedPeriodsCommas = tokenResponseText_initial.replace(/(\[SM_g].*?)(\[SM_h])([.,])/g, "$1$3$2");
 
                             	const wordCompilationRegex = /\[SM_g](.*?)\[SM_h]/g;
                                 var wordRegexResponse;
@@ -83,7 +81,7 @@ const returnSummary = function(summaryLength) {
                                 var summary = "";
 
                                 do {
-                                    wordRegexResponse = wordCompilationRegex.exec(tokenResponseText_fixedCommas);
+                                    wordRegexResponse = wordCompilationRegex.exec(tokenResponseText_fixedPeriodsCommas);
                                     if (wordRegexResponse) {
                                         summary += wordRegexResponse[1] + " ";
                                     }
