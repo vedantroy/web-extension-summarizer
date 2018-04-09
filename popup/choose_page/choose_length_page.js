@@ -52,12 +52,12 @@ function getButtonID(clickedObject) {
 }
 
 function createSummaryBox(summary) {
+	console.log("Setting textarea content to: " + summary)
     window.location.href = "../summary_page/summary_page.html";
+    document.getElementById('summary-field').value = summary;
 }
 
 const returnSummary = function(summaryLength) {
-    console.log("Clicking button");
-
     return new Promise((resolve, reject) => {
         browser.tabs.query({ active: true, currentWindow: true })
             .then(tabs => {
