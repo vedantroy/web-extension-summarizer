@@ -52,9 +52,12 @@ function getButtonID(clickedObject) {
 }
 
 function createSummaryBox(summary) {
-	console.log("Setting textarea content to: " + summary)
-    window.location.href = "../summary_page/summary_page.html";
-    document.getElementById('summary-field').value = summary;
+	console.log("Setting textarea content to: " + summary);
+	const currentSummary = {
+		currentSummary: summary
+	}
+	browser.storage.local.set(currentSummary);
+    window.location.href = '../summary_page/summary_page.html';
 }
 
 const returnSummary = function(summaryLength) {
