@@ -20,16 +20,14 @@ document.addEventListener('click', e => {
             const summary = summaryResponse['summary'];
 
             if (status == 'no-error') {
-                console.log(summary)
-            } else if (status == 'Error - Unrecognisable Format') {
-                console.log(status)
-            } else if (status == 'Error - Too Short') {
-                console.log(status)
+                createSummaryBox(summary);
+                console.log(summary);
             } else {
-                console.log(status)
+                createSummaryBox(status);
+                console.log(status);
             }
         }, error => {
-            console.log(error);
+        	   	createSummaryBox("Exception (report to developer): " + error);
         })
     }
 });
@@ -53,7 +51,13 @@ function getButtonID(clickedObject) {
     }
 }
 
+function createSummaryBox(summary) {
+    window.location.href = "../summary_page/summary_page.html";
+}
+
 const returnSummary = function(summaryLength) {
+    console.log("Clicking button");
+
     return new Promise((resolve, reject) => {
         browser.tabs.query({ active: true, currentWindow: true })
             .then(tabs => {
@@ -68,14 +72,14 @@ const returnSummary = function(summaryLength) {
                         const summaryToken = nonTokenResponseText.match(/TOKEN=(.*?)&/);
                         const summaryTokenCompiledURL = 'https://smmry.com/sm_portal.php?&SM_TOKEN=' + summaryToken[1] + '&SM_POST_SAVE=0&SM_REDUCTION=-1&SM_CHARACTER=-1&SM_LENGTH=' + summaryLength.toString() + '&SM_URL=' + activeTabURL;
 
-                       browser.tabs.create({ url: summaryTokenCompiledURL });
+                        browser.tabs.create({ url: summaryTokenCompiledURL });
 
                         fetch(summaryTokenCompiledURL).then((tokenSummaryResponse) => tokenSummaryResponse.text())
                             .then(tokenResponseText_initial => {
 
-                            	const tokenResponseText_fixedPeriodsCommas = tokenResponseText_initial.replace(/(\[SM_g].*?)(\[SM_h])([.,])/g, "$1$3$2");
+                                const tokenResponseText_fixedPeriodsCommas = tokenResponseText_initial.replace(/(\[SM_g].*?)(\[SM_h])([.,])/g, "$1$3$2");
 
-                            	const wordCompilationRegex = /\[SM_g](.*?)\[SM_h]/g;
+                                const wordCompilationRegex = /\[SM_g](.*?)\[SM_h]/g;
                                 var wordRegexResponse;
 
                                 var summary = "";
@@ -104,20 +108,22 @@ function returnSummaryResponse(summary, rawTokenText) {
         return { status: 'Error - Unrecognisable Format', summary: null }
     } else if (rawTokenText.includes('SOURCE IS TOO SHORT')) {
         return { status: 'Error - Too Short', summary: null };
+    } else if (rawTokenText.includes('THE PAGE IS TOO LONG TO RETRIEVE')) {
+        return { status: 'Error - Too Long', summary: null };
     } else {
         return { status: 'Error - Unknown Error', summary: null };
     }
 }
 
 function download(filename, text) {
-  var element = document.createElement('a');
-  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-  element.setAttribute('download', filename);
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
 
-  element.style.display = 'none';
-  document.body.appendChild(element);
+    element.style.display = 'none';
+    document.body.appendChild(element);
 
-  element.click();
+    element.click();
 
-  document.body.removeChild(element);
+    document.body.removeChild(element);
 }
