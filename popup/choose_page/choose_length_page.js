@@ -56,8 +56,17 @@ function createSummaryBox(summary) {
 	const currentSummary = {
 		currentSummary: summary
 	}
-	browser.storage.local.set(currentSummary);
+	browser.storage.local.set(currentSummary).then(changeUI, onError);
+}
+
+//Integrate both of these functions into createSummaryBox
+
+function changeUI() {
     window.location.href = '../summary_page/summary_page.html';
+}
+
+function onError(error) {
+	console.log(error);
 }
 
 const returnSummary = function(summaryLength) {
