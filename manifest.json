@@ -6,6 +6,7 @@
 	"description": "Summarizes webpages",
 
 	"permissions": [
+		"activeTab",
 		"tabs",
 		"storage",
 		"downloads",
@@ -18,7 +19,7 @@
 
 	"browser_action": {
 		"browser_style": true,
-		"default_popup": "popup/choose_page/choose_length_page.html",
+		"default_popup": "popup/choose_length_page.html",
 		"default_icon": {
 			"16": "icons/summarizer-icon-16.png",
 			"32": "icons/summarizer-icon-32.png"

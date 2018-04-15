@@ -8,55 +8,28 @@ TODO.txt
 */
 
 
-document.addEventListener('click', e => {
+/**
+ * When the popup loads, inject a content script into the active tab,
+ * and add a click handler.
+ * TODO: If we couldn't inject the script, handle the error.
+ */
 
-    const buttonID = getButtonID(e.target);
-
-    if (!(buttonID === 'no-button-clicked') && !(buttonID == 'button-clicked-but-no-id')) {
-        //call returnSummary function and return its value
-        returnSummary(buttonID).then(summaryResponse => {
-
-            const status = summaryResponse['status'];
-            const summary = summaryResponse['summary'];
-
-            if (status == 'no-error') {
-                createSummaryBox(summary);
-                console.log(summary);
-            } else {
-                createSummaryBox(status);
-                console.log(status);
-            }
-        }, error => {
-        	   	createSummaryBox("Exception (report to developer): " + error);
-        })
-    }
-});
+browser.tabs.executeScript({ file: "../inject.js" })
+    .then(listenForClicks);
 
 
-function getButtonID(clickedObject) {
+function listenForClicks() {
+    document.addEventListener('click', e => {
 
-    if (!clickedObject.classList.contains('summary-button')) {
-        return 'no-button-clicked';
-    }
-
-    switch (clickedObject.id) {
-        case 'b-3':
-            return '3';
-        case 'b-5':
-            return '5';
-        case 'b-7':
-            return '7';
-        default:
-            return 'button-clicked-but-no-id'
-    }
-}
-
-function createSummaryBox(summary) {
-	console.log("Setting textarea content to: " + summary);
-	const currentSummary = {
-		currentSummary: summary
-	}
-	browser.storage.local.set(currentSummary).then(changeUI, onError);
+        if (!e.target.classList.contains('summary-button')) {
+            return;
+        } else {
+            browser.tabs.query({ active: true, currentWindow: true })
+                .then(tabs => {
+                    browser.tabs.sendMessage(tabs[0].id, { summaryLength: e.target.id, targetURL: tabs[0].url });
+                });
+        }
+    });
 }
 
 //Integrate both of these functions into createSummaryBox
@@ -66,11 +39,12 @@ function changeUI() {
 }
 
 function onError(error) {
-	console.log(error);
+    console.log(error);
 }
 
 const returnSummary = function(summaryLength) {
     return new Promise((resolve, reject) => {
+
         browser.tabs.query({ active: true, currentWindow: true })
             .then(tabs => {
 
