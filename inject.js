@@ -15,16 +15,22 @@
      */
     browser.runtime.onMessage.addListener((message) => {
 
-        console.log("Trying to inject iFrame");
+		var iFrame = document.createElement("iFrame");
+		iFrame.style.cssText = "width: 100%; height: 100%";
+		iFrame.src
 
-        var iframe = document.createElement("iframe");
-        iframe.src = browser.extension.getURL("inject.html");
+		var boxDiv = document.createElement("div");
+		boxDiv.style.cssText = "background: white; box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 9px 8px; height: 100%; left: calc(100% - 390px); position: fixed; top: 0px; width: 390px; z-index: 1;"
 
-        iframe.width = 300;
-        iframe.height = 300;
+		var zeroDiv = document.createElement("div");
+		zeroDiv.style.cssText = "position: fixed; width: 0px; height: 0px; top: 0px; left: 0px; z-index: 2147483647;";
 
-        document.body.appendChild(iframe);
+		var outerDiv = document.createElement("div");
 
+		boxDiv.appendChild(iFrame);
+		zeroDiv.appendChild(boxDiv);
+		outerDiv.appendChild(zeroDiv);
+		document.body.appendChild(outerDiv);
 
         returnSummary(message.summaryLength, message.targetURL).then(summary => {
             //Do something (probably a good idea)
