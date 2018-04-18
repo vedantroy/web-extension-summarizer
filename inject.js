@@ -58,10 +58,20 @@
                     const summaryToken = nonTokenResponseText.match(/TOKEN=(.*?)&/);
                     const summaryTokenCompiledURL = 'https://smmry.com/sm_portal.php?&SM_TOKEN=' + summaryToken[1] + '&SM_POST_SAVE=0&SM_REDUCTION=-1&SM_CHARACTER=-1&SM_LENGTH=' + summaryLength.toString() + '&SM_URL=' + targetURL;
 
+                    //Temporary
+                    console.log(summaryTokenCompiledURL);
+
                     fetch(summaryTokenCompiledURL).then((tokenSummaryResponse) => tokenSummaryResponse.text())
                         .then(tokenResponseText_initial => {
 
                             const tokenResponseText_fixedPeriodsCommas = tokenResponseText_initial.replace(/(\[SM_g].*?)(\[SM_h])([.,])/g, "$1$3$2");
+
+                            console.log("Fixed for Periods/Commas: " + tokenResponseText_fixedPeriodsCommas);
+
+                            const tokenResponseText_fixedNewLines = tokenResponseText_fixedPeriodsCommas.replace(/(\[SM_g].*?)(\[SM_h]\[SM_I])/g, "$1\n");
+
+                            //This doesn't work yet
+                            console.log("Fixed For New Lines:" + tokenResponseText_fixedNewLines);
 
                             const wordCompilationRegex = /\[SM_g](.*?)\[SM_h]/g;
                             var wordRegexResponse;
@@ -69,7 +79,7 @@
                             var summary = "";
 
                             do {
-                                wordRegexResponse = wordCompilationRegex.exec(tokenResponseText_fixedPeriodsCommas);
+                                wordRegexResponse = wordCompilationRegex.exec(tokenResponseText_fixedNewLines);
                                 if (wordRegexResponse) {
                                     summary += wordRegexResponse[1] + " ";
                                 }
