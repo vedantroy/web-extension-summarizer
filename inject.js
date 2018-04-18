@@ -58,22 +58,22 @@
                     const summaryToken = nonTokenResponseText.match(/TOKEN=(.*?)&/);
                     const summaryTokenCompiledURL = 'https://smmry.com/sm_portal.php?&SM_TOKEN=' + summaryToken[1] + '&SM_POST_SAVE=0&SM_REDUCTION=-1&SM_CHARACTER=-1&SM_LENGTH=' + summaryLength.toString() + '&SM_URL=' + targetURL;
 
-                    //Temporary
-                    //TODO - find more elegant way of adding in double new lines.
-                    console.log(summaryTokenCompiledURL);
+                    //console.log(summaryTokenCompiledURL);
 
                     fetch(summaryTokenCompiledURL).then((tokenSummaryResponse) => tokenSummaryResponse.text())
                         .then(tokenResponseText_initial => {
 
+                        	//TODO - add support for quotes, and support for
+
+                        	console.log(tokenResponseText_initial);
+
                         	//tokenResponseText_initial = "[SM_g]This[SM_h][SM_g]is[SM_h][SM_g]a[SM_h][SM_g]sentence[SM_h].[SM_l][SM_g]Here[SM_h][SM_g]is[SM_h][SM_g]another[SM_h][SM_g]sentence[SM_h].[SM_1]"
 
-                            const tokenResponseText_fixedPeriodsCommas = tokenResponseText_initial.replace(/(\[SM_g].*?)(\[SM_h])([.,])/g, "$1$3$2");
+                            const tokenResponseText_fixedPunctuation = tokenResponseText_initial.replace(/(\[SM_g].*?)(\[SM_h])([.,?])/g, "$1$3$2");
 
-                            const newLineIndicator = "rstudios-web-extension-summarizer-double-new-line-uniqueID"
+                            const tokenResponseText_fixedNewLines = tokenResponseText_fixedPunctuation.replace(/(\[SM_g].*?)(\[SM_h]\[SM_l])/g, "$1\n\n$2");
 
-                            const tokenResponseText_fixedNewLines = tokenResponseText_fixedPeriodsCommas.replace(/(\[SM_g].*?)(\[SM_h]\[SM_l])/g, "$1" + newLineIndicator + "$2");
-
-                            const wordCompilationRegex = /\[SM_g](.*?)\[SM_h]/g;
+                            const wordCompilationRegex = /\[SM_g]([\s\S]*?)\[SM_h]/g;
                             var wordRegexResponse;
 
                             var summary = "";
@@ -81,11 +81,7 @@
                             do {
                                 wordRegexResponse = wordCompilationRegex.exec(tokenResponseText_fixedNewLines);
                                 if (wordRegexResponse) {
-                                    if (wordRegexResponse[1].includes(newLineIndicator)) {
-                                        summary += wordRegexResponse[1].replace(newLineIndicator, "") + "\n\n";
-                                    } else {
                                         summary += wordRegexResponse[1] + " ";
-                                    }
                                 }
                             } while (wordRegexResponse);
 
