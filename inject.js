@@ -63,9 +63,11 @@
                         .then(tokenResponseText_initial => {
                             //tokenResponseText_initial = "[SM_g]This[SM_h][SM_g]is[SM_h][SM_g]a[SM_h][SM_g]sentence[SM_h].[SM_l][SM_g]Here[SM_h][SM_g]is[SM_h][SM_g]another[SM_h][SM_g]sentence[SM_h].[SM_1]"
 
+                            //Backup regex: /(\[SM_g].*?)(\[SM_h])((?:[.,?]|\[SM_l]| ?&quot;){0,3})/g 	
+
                             var t1 = performance.now();
 
-                            tokenResponseText_processed = tokenResponseText_initial.replace(/(\[SM_g].*?)(\[SM_h])((?:[.,?]|\[SM_l]| ?&quot;){0,3})/g, "$1$3$2");
+                            tokenResponseText_processed = tokenResponseText_initial.replace(/(\[SM_g].*?)(\[SM_h])((?:[.,?]|\[SM_l]| ?&quot;| ?&#039;){0,3})/g, "$1$3$2");
 
                             const wordCompilationRegex = /\[SM_g]([\s\S]*?)\[SM_h]/g;
                             var wordRegexResponse;
@@ -79,7 +81,7 @@
 
                                     wordRegexResponse[1] = wordRegexResponse[1].replace("[SM_l]", "\n\n");
 
-                                    if (wordRegexResponse[1].includes(" &quot;")) {
+                                    if (wordRegexResponse[1].includes(" &#039;") || wordRegexResponse[1].includes(" &quot;")) {
                                         summary += wordRegexResponse[1];
                                     } else {
                                         summary += wordRegexResponse[1] + " ";
