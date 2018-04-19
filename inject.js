@@ -58,20 +58,23 @@
                     const summaryToken = nonTokenResponseText.match(/TOKEN=(.*?)&/);
                     const summaryTokenCompiledURL = 'https://smmry.com/sm_portal.php?&SM_TOKEN=' + summaryToken[1] + '&SM_POST_SAVE=0&SM_REDUCTION=-1&SM_CHARACTER=-1&SM_LENGTH=' + summaryLength.toString() + '&SM_URL=' + targetURL;
 
-                    //console.log(summaryTokenCompiledURL);
+                    console.log(summaryTokenCompiledURL);
 
                     fetch(summaryTokenCompiledURL).then((tokenSummaryResponse) => tokenSummaryResponse.text())
                         .then(tokenResponseText_initial => {
 
-                        	//TODO - add support for quotes, and support for
+                            console.log(tokenResponseText_initial);
 
-                        	console.log(tokenResponseText_initial);
+                            //tokenResponseText_initial = "[SM_g]This[SM_h][SM_g]is[SM_h][SM_g]a[SM_h][SM_g]sentence[SM_h].[SM_l][SM_g]Here[SM_h][SM_g]is[SM_h][SM_g]another[SM_h][SM_g]sentence[SM_h].[SM_1]"
 
-                        	//tokenResponseText_initial = "[SM_g]This[SM_h][SM_g]is[SM_h][SM_g]a[SM_h][SM_g]sentence[SM_h].[SM_l][SM_g]Here[SM_h][SM_g]is[SM_h][SM_g]another[SM_h][SM_g]sentence[SM_h].[SM_1]"
+                            const tokenResponseText_fixedPunctuation_noQuotes = tokenResponseText_initial.replace(/(\[SM_g].*?)(\[SM_h])([.,?])/g, "$1$3$2");
 
-                            const tokenResponseText_fixedPunctuation = tokenResponseText_initial.replace(/(\[SM_g].*?)(\[SM_h])([.,?])/g, "$1$3$2");
+                            const tokenResponseText_fixedPunctuation_Quotes = tokenResponseText_fixedPunctuation_noQuotes.replace(/(\[SM_g].*?)(\[SM_h])(\s*)(&quot;)/g, "$1$3$4$2");
 
-                            const tokenResponseText_fixedNewLines = tokenResponseText_fixedPunctuation.replace(/(\[SM_g].*?)(\[SM_h]\[SM_l])/g, "$1\n\n$2");
+
+                            console.log(tokenResponseText_fixedPunctuation_Quotes);
+
+                            const tokenResponseText_fixedNewLines = tokenResponseText_fixedPunctuation_Quotes.replace(/(\[SM_g].*?)(\[SM_h]\[SM_l])/g, "$1\n\n$2");
 
                             const wordCompilationRegex = /\[SM_g]([\s\S]*?)\[SM_h]/g;
                             var wordRegexResponse;
@@ -81,7 +84,11 @@
                             do {
                                 wordRegexResponse = wordCompilationRegex.exec(tokenResponseText_fixedNewLines);
                                 if (wordRegexResponse) {
+                                    if (wordRegexResponse[1].includes(" &quot;")) {
+                                        summary += wordRegexResponse[1];
+                                    } else {
                                         summary += wordRegexResponse[1] + " ";
+                                    }
                                 }
                             } while (wordRegexResponse);
 
