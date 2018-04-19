@@ -39,7 +39,6 @@
 
             if (summary.status == "no-error") {
                 summaryBox.innerHTML = summary.summary;
-
             } else {
                 summaryBox.innerHTML = summary.status;
             }
@@ -63,18 +62,26 @@
                     fetch(summaryTokenCompiledURL).then((tokenSummaryResponse) => tokenSummaryResponse.text())
                         .then(tokenResponseText_initial => {
 
-                            console.log(tokenResponseText_initial);
+
+                            //console.log("Initial Response Text" + tokenResponseText_initial);
 
                             //tokenResponseText_initial = "[SM_g]This[SM_h][SM_g]is[SM_h][SM_g]a[SM_h][SM_g]sentence[SM_h].[SM_l][SM_g]Here[SM_h][SM_g]is[SM_h][SM_g]another[SM_h][SM_g]sentence[SM_h].[SM_1]"
 
+                            var t1 = performance.now();
+
+                            const tokenResponseText_fixedNewLines = tokenResponseText_initial.fixQuotes().fixPunc().fixNewLine().fixQuotes().fixNewLine().fixPunc().fixPunc().fixQuotes().fixNewLine().fixPunc().fixNewLine().fixQuotes().fixNewLine().fixPunc().fixQuotes().fixNewLine().fixQuotes().fixPunc();
+
+                            /*
+                            
                             const tokenResponseText_fixedPunctuation_noQuotes = tokenResponseText_initial.replace(/(\[SM_g].*?)(\[SM_h])([.,?])/g, "$1$3$2");
 
                             const tokenResponseText_fixedPunctuation_Quotes = tokenResponseText_fixedPunctuation_noQuotes.replace(/(\[SM_g].*?)(\[SM_h])(\s*)(&quot;)/g, "$1$3$4$2");
 
-
                             console.log(tokenResponseText_fixedPunctuation_Quotes);
 
-                            const tokenResponseText_fixedNewLines = tokenResponseText_fixedPunctuation_Quotes.replace(/(\[SM_g].*?)(\[SM_h]\[SM_l])/g, "$1\n\n$2");
+                            const tokenResponseText_fixedNewLines = tokenResponseText_fixedPunctuation_Quotes.replace(/(\[SM_g].*?)(\[SM_h])(\[SM_l])/g, "$1\n\n$2");
+
+                            */
 
                             const wordCompilationRegex = /\[SM_g]([\s\S]*?)\[SM_h]/g;
                             var wordRegexResponse;
@@ -91,6 +98,9 @@
                                     }
                                 }
                             } while (wordRegexResponse);
+
+                            var t2 = performance.now();
+                            console.log("Regex-ing took: " + (t2 - t1) + " milliseconds");
 
                             //Replace all &#039; with apostrophe. This is only a ***temporary*** fix b/c doesn't work with other quirky characters
                             summary = summary.replace(/&#039;/g, '\'');
@@ -115,4 +125,17 @@
         }
     }
 
+    //Change .*? to [\s\S]
+
+    String.prototype.fixQuotes = function(string) {
+        return this.toString().replace(/(\[SM_g][\s\S]*?)(\[SM_h])(\s*)(&quot;)/g, "$1$3$4$2");
+    }
+
+    String.prototype.fixPunc = function(string) {
+        return this.toString().replace(/(\[SM_g][\s\S]*?)(\[SM_h])([.,?])/g, "$1$3$2");
+    }
+
+    String.prototype.fixNewLine = function(string) {
+        return this.toString().replace(/(\[SM_g][\s\S]*?)(\[SM_h])(\[SM_l])/g, "$1\n\n$2");
+    }
 })();
