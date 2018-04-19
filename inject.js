@@ -69,7 +69,13 @@
 
                             var t1 = performance.now();
 
+                            tokenResponseText_processed = tokenResponseText_initial.replace(/(\[SM_g].*?)(\[SM_h])((?:[.,?]|\[SM_l]| ?&quot;){0,3})/g, "$1$3$2")
+
+                            //console.log(tokenResponseText_fixedNewLines);
+
+                            /*
                             const tokenResponseText_fixedNewLines = tokenResponseText_initial.fixQuotes().fixPunc().fixNewLine().fixQuotes().fixNewLine().fixPunc().fixPunc().fixQuotes().fixNewLine().fixPunc().fixNewLine().fixQuotes().fixNewLine().fixPunc().fixQuotes().fixNewLine().fixQuotes().fixPunc();
+							*/
 
                             /*
                             
@@ -89,13 +95,28 @@
                             var summary = "";
 
                             do {
-                                wordRegexResponse = wordCompilationRegex.exec(tokenResponseText_fixedNewLines);
+                                wordRegexResponse = wordCompilationRegex.exec(tokenResponseText_processed);
                                 if (wordRegexResponse) {
+                                	console.log("Word Regex Response: " + wordRegexResponse[1] + "\n -----");
+
+                                	wordRegexResponse[1] = wordRegexResponse[1].replace("[SM_l]","\n\n");
+
                                     if (wordRegexResponse[1].includes(" &quot;")) {
                                         summary += wordRegexResponse[1];
                                     } else {
                                         summary += wordRegexResponse[1] + " ";
                                     }
+
+                                    /*
+                                    const wordRegexResponse_withNewLines = wordRegexResponse[1].replace("\[SM_l]", "\n\n");
+                                    if (wordRegexResponse_withNewLines[1].includes(" &quot;")) {
+                                        summary += wordRegexResponse_withNewLines[1];
+                                    } else {
+                                        summary += wordRegexResponse_withNewLines[1] + " ";
+                                    }
+                                    */
+
+
                                 }
                             } while (wordRegexResponse);
 
