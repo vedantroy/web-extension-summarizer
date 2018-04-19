@@ -61,33 +61,11 @@
 
                     fetch(summaryTokenCompiledURL).then((tokenSummaryResponse) => tokenSummaryResponse.text())
                         .then(tokenResponseText_initial => {
-
-
-                            //console.log("Initial Response Text" + tokenResponseText_initial);
-
                             //tokenResponseText_initial = "[SM_g]This[SM_h][SM_g]is[SM_h][SM_g]a[SM_h][SM_g]sentence[SM_h].[SM_l][SM_g]Here[SM_h][SM_g]is[SM_h][SM_g]another[SM_h][SM_g]sentence[SM_h].[SM_1]"
 
                             var t1 = performance.now();
 
-                            tokenResponseText_processed = tokenResponseText_initial.replace(/(\[SM_g].*?)(\[SM_h])((?:[.,?]|\[SM_l]| ?&quot;){0,3})/g, "$1$3$2")
-
-                            //console.log(tokenResponseText_fixedNewLines);
-
-                            /*
-                            const tokenResponseText_fixedNewLines = tokenResponseText_initial.fixQuotes().fixPunc().fixNewLine().fixQuotes().fixNewLine().fixPunc().fixPunc().fixQuotes().fixNewLine().fixPunc().fixNewLine().fixQuotes().fixNewLine().fixPunc().fixQuotes().fixNewLine().fixQuotes().fixPunc();
-							*/
-
-                            /*
-                            
-                            const tokenResponseText_fixedPunctuation_noQuotes = tokenResponseText_initial.replace(/(\[SM_g].*?)(\[SM_h])([.,?])/g, "$1$3$2");
-
-                            const tokenResponseText_fixedPunctuation_Quotes = tokenResponseText_fixedPunctuation_noQuotes.replace(/(\[SM_g].*?)(\[SM_h])(\s*)(&quot;)/g, "$1$3$4$2");
-
-                            console.log(tokenResponseText_fixedPunctuation_Quotes);
-
-                            const tokenResponseText_fixedNewLines = tokenResponseText_fixedPunctuation_Quotes.replace(/(\[SM_g].*?)(\[SM_h])(\[SM_l])/g, "$1\n\n$2");
-
-                            */
+                            tokenResponseText_processed = tokenResponseText_initial.replace(/(\[SM_g].*?)(\[SM_h])((?:[.,?]|\[SM_l]| ?&quot;){0,3})/g, "$1$3$2");
 
                             const wordCompilationRegex = /\[SM_g]([\s\S]*?)\[SM_h]/g;
                             var wordRegexResponse;
@@ -97,26 +75,15 @@
                             do {
                                 wordRegexResponse = wordCompilationRegex.exec(tokenResponseText_processed);
                                 if (wordRegexResponse) {
-                                	console.log("Word Regex Response: " + wordRegexResponse[1] + "\n -----");
+                                    //console.log("Word Regex Response: " + wordRegexResponse[1] + "\n -----");
 
-                                	wordRegexResponse[1] = wordRegexResponse[1].replace("[SM_l]","\n\n");
+                                    wordRegexResponse[1] = wordRegexResponse[1].replace("[SM_l]", "\n\n");
 
                                     if (wordRegexResponse[1].includes(" &quot;")) {
                                         summary += wordRegexResponse[1];
                                     } else {
                                         summary += wordRegexResponse[1] + " ";
                                     }
-
-                                    /*
-                                    const wordRegexResponse_withNewLines = wordRegexResponse[1].replace("\[SM_l]", "\n\n");
-                                    if (wordRegexResponse_withNewLines[1].includes(" &quot;")) {
-                                        summary += wordRegexResponse_withNewLines[1];
-                                    } else {
-                                        summary += wordRegexResponse_withNewLines[1] + " ";
-                                    }
-                                    */
-
-
                                 }
                             } while (wordRegexResponse);
 
@@ -144,19 +111,5 @@
         } else {
             return { status: 'Error - Unknown Error', summary: null };
         }
-    }
-
-    //Change .*? to [\s\S]
-
-    String.prototype.fixQuotes = function(string) {
-        return this.toString().replace(/(\[SM_g][\s\S]*?)(\[SM_h])(\s*)(&quot;)/g, "$1$3$4$2");
-    }
-
-    String.prototype.fixPunc = function(string) {
-        return this.toString().replace(/(\[SM_g][\s\S]*?)(\[SM_h])([.,?])/g, "$1$3$2");
-    }
-
-    String.prototype.fixNewLine = function(string) {
-        return this.toString().replace(/(\[SM_g][\s\S]*?)(\[SM_h])(\[SM_l])/g, "$1\n\n$2");
     }
 })();
