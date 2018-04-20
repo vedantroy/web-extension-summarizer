@@ -33,16 +33,24 @@
         outerDiv.appendChild(zeroDiv);
         document.body.appendChild(outerDiv);
 
-        returnSummary(message.summaryLength, message.targetURL).then(summary => {
+        iFrame.onload = () => {
+            var closeButton = document.getElementById("contentFrame").contentWindow.document.getElementById("close-btn");
+            
+            closeButton.addEventListener("click", () => {
+            	console.log("Close Button Clicked - Arrow  Method");
+            });
 
-            summaryBox = document.getElementById("contentFrame").contentWindow.document.getElementById("summary");
+            returnSummary(message.summaryLength, message.targetURL).then(summary => {
 
-            if (summary.status == "no-error") {
-                summaryBox.innerHTML = summary.summary;
-            } else {
-                summaryBox.innerHTML = summary.status;
-            }
-        });
+                var summaryBox = document.getElementById("contentFrame").contentWindow.document.getElementById("summary");
+
+                if (summary.status == "no-error") {
+                    summaryBox.innerHTML = summary.summary;
+                } else {
+                    summaryBox.innerHTML = summary.status;
+                }
+            });
+        }
     });
 
     const returnSummary = function(summaryLength, targetURL) {
@@ -57,17 +65,15 @@
                     const summaryToken = nonTokenResponseText.match(/TOKEN=(.*?)&/);
                     const summaryTokenCompiledURL = 'https://smmry.com/sm_portal.php?&SM_TOKEN=' + summaryToken[1] + '&SM_POST_SAVE=0&SM_REDUCTION=-1&SM_CHARACTER=-1&SM_LENGTH=' + summaryLength.toString() + '&SM_URL=' + targetURL;
 
-                    console.log(summaryTokenCompiledURL);
+                    //console.log(summaryTokenCompiledURL);
 
                     fetch(summaryTokenCompiledURL).then((tokenSummaryResponse) => tokenSummaryResponse.text())
                         .then(tokenResponseText_initial => {
                             //tokenResponseText_initial = "[SM_g]This[SM_h][SM_g]is[SM_h][SM_g]a[SM_h][SM_g]sentence[SM_h].[SM_l][SM_g]Here[SM_h][SM_g]is[SM_h][SM_g]another[SM_h][SM_g]sentence[SM_h].[SM_1]"
 
-                            //Backup regex: /(\[SM_g].*?)(\[SM_h])((?:[.,?]|\[SM_l]| ?&quot;){0,3})/g 	
+                            //Backup regex: /(\[SM_g].*?)(\[SM_h])((?:[.,?]|\[SM_l]| ?&quot;){0,3})/g 	 | ?\\"
 
-                            var t1 = performance.now();
-
-                            tokenResponseText_processed = tokenResponseText_initial.replace(/(\[SM_g].*?)(\[SM_h])((?:[.,?]|\[SM_l]| ?&quot;| ?&#039;){0,3})/g, "$1$3$2");
+                            tokenResponseText_processed = tokenResponseText_initial.replace(/(\[SM_g].*?)(\[SM_h])((?:[.,?:!;%*+-<>=@_~^]|\[SM_l]| ?&quot;| ?&#039;| ?\\"){0,3})/g, "$1$3$2");
 
                             const wordCompilationRegex = /\[SM_g]([\s\S]*?)\[SM_h]/g;
                             var wordRegexResponse;
@@ -81,16 +87,15 @@
 
                                     wordRegexResponse[1] = wordRegexResponse[1].replace("[SM_l]", "\n\n");
 
-                                    if (wordRegexResponse[1].includes(" &#039;") || wordRegexResponse[1].includes(" &quot;")) {
+                                    wordRegexResponse[1] = wordRegexResponse[1].replace('\\"', '"');
+
+                                    if (wordRegexResponse[1].includes(" &#039;") || wordRegexResponse[1].includes(" &quot;") || wordRegexResponse[1].includes(" \"")) {
                                         summary += wordRegexResponse[1];
                                     } else {
                                         summary += wordRegexResponse[1] + " ";
                                     }
                                 }
                             } while (wordRegexResponse);
-
-                            var t2 = performance.now();
-                            console.log("Regex-ing took: " + (t2 - t1) + " milliseconds");
 
                             //Replace all &#039; with apostrophe. This is only a ***temporary*** fix b/c doesn't work with other quirky characters
                             summary = summary.replace(/&#039;/g, '\'');
