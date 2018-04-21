@@ -15,43 +15,78 @@
      */
     browser.runtime.onMessage.addListener((message) => {
 
-        var iFrame = document.createElement("iFrame");
-        iFrame.id = "contentFrame";
-        iFrame.style.cssText = "width: 100%; height: 100%; border: none;";
-        iFrame.src = browser.extension.getURL("inject.html");
+        const outerDivID = "rstudios-web-extension-summarizer-88A178C0FD69FEDDB3ACFD0F5234D949AB2EE6543718774D5E2D331BF8376B99-fruit-jam-4EEC889A8A3E73A7BF00773FDD16AC859E7AEF517673DFD7C143BC327CBBC30C";
 
-        var boxDiv = document.createElement("div");
-        boxDiv.style.cssText = "background: white; box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 9px 8px; height: 100%; left: calc(100% - 390px); position: fixed; top: 0px; width: 390px; z-index: 1;"
+        if (!document.getElementById(outerDivID)) {
+            var iFrame = document.createElement("iFrame");
+            iFrame.id = "contentFrame";
+            iFrame.style.cssText = "width: 100%; height: 100%; border: none;";
+            iFrame.src = browser.extension.getURL("inject.html");
 
-        var zeroDiv = document.createElement("div");
-        zeroDiv.style.cssText = "position: fixed; width: 0px; height: 0px; top: 0px; left: 0px; z-index: 2147483647;";
+            var boxDiv = document.createElement("div");
+            boxDiv.style.cssText = "background: white; box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 9px 8px; height: 100%; left: calc(100% - 390px); position: fixed; top: 0px; width: 390px; z-index: 1;"
 
-        var outerDiv = document.createElement("div");
+            var zeroDiv = document.createElement("div");
+            zeroDiv.style.cssText = "position: fixed; width: 0px; height: 0px; top: 0px; left: 0px; z-index: 2147483647;";
 
-        boxDiv.appendChild(iFrame);
-        zeroDiv.appendChild(boxDiv);
-        outerDiv.appendChild(zeroDiv);
-        document.body.appendChild(outerDiv);
+            var outerDiv = document.createElement("div");
+            outerDiv.id = outerDivID;
 
-        iFrame.onload = () => {
-            var closeButton = document.getElementById("contentFrame").contentWindow.document.getElementById("close-btn");
-            
-            closeButton.addEventListener("click", () => {
-            	console.log("Close Button Clicked - Arrow  Method");
-            });
+            boxDiv.appendChild(iFrame);
+            zeroDiv.appendChild(boxDiv);
+            outerDiv.appendChild(zeroDiv);
+            document.body.appendChild(outerDiv);
 
-            returnSummary(message.summaryLength, message.targetURL).then(summary => {
+            iFrame.onload = () => {
+                var closeButton = iFrame.contentWindow.document.getElementById("close-btn");
 
-                var summaryBox = document.getElementById("contentFrame").contentWindow.document.getElementById("summary");
+                closeButton.addEventListener("click", () => {
+                    outerDiv.remove();
+                });
 
-                if (summary.status == "no-error") {
-                    summaryBox.innerHTML = summary.summary;
-                } else {
-                    summaryBox.innerHTML = summary.status;
-                }
-            });
+                var copyButton = iFrame.contentWindow.document.getElementById("copy-btn");
+
+                copyButton.addEventListener("click", () => {
+                    console.log("Clicking Copy Button");
+                    var sBox = iFrame.contentWindow.document.getElementById("summary");
+                    console.log(sBox.innerHTML);
+                    var range = document.createRange();
+                    var selection = window.getSelection();
+                    range.selectNodeContents(sBox);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+
+                    try {
+                        var successful = document.execCommand('copy');
+                        var msg = successful ? 'successful' : 'unsuccessful';
+                        console.log('Copying text command was ' + msg);
+                    } catch (err) {
+                        console.log('Oops, unable to copy');
+                    }
+
+                });
+
+                updateSummaryBox(message.summaryLength, message.targetURL);
+            }
+        } else {
+            var summaryBox_no_duplicate = document.getElementById("contentFrame").contentWindow.document.getElementById("summary");
+            summaryBox_no_duplicate.innerHTML = "Loading...";
+            updateSummaryBox(message.summaryLength, message.targetURL);
         }
     });
+
+    function updateSummaryBox(summaryLength, summaryURL) {
+        returnSummary(summaryLength, summaryURL).then(summary => {
+
+            var summaryBox = document.getElementById("contentFrame").contentWindow.document.getElementById("summary");
+
+            if (summary.status == "no-error") {
+                summaryBox.innerHTML = summary.summary;
+            } else {
+                summaryBox.innerHTML = summary.status;
+            }
+        });
+    }
 
     const returnSummary = function(summaryLength, targetURL) {
         return new Promise((resolve, reject) => {
