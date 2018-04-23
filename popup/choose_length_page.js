@@ -10,7 +10,7 @@ browser.tabs.executeScript({ file: "../inject-content/inject.js" })
 function listenForClicks() {
     document.addEventListener('click', e => {
 
-        if (!e.target.classList.contains('summary-button')) {
+        if (!e.target.classList.contains('btn')) {
             return;
         } else {
             browser.tabs.query({ active: true, currentWindow: true })

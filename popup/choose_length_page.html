@@ -3,15 +3,33 @@
 
 <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="../common/common_styles.css" />
-    <link rel="stylesheet" href="choose_length_page.css" />
+    <link href="https://fonts.googleapis.com/css?family=Nunito:800" rel="stylesheet">
+    <style>
+    .btn {
+        width: 100%;
+        cursor: pointer;
+        border: none;
+        background-color: white;
+        color: dodgerblue;
+        font-family: 'Nunito', sans-serif;
+        font-weight: 800;
+        font-size: 16px;
+        text-align: center;
+        padding: 4px 8px 4px 8px;
+    }
+
+    .btn:hover {
+        background: #2196F3;
+        color: white;
+    }
+    </style>
 </head>
 
 <body>
-    <div class="btn-group">
-        <button class="summary-button btn" id="3">Short</button>
-        <button class="summary-button btn" id="5">Medium</button>
-        <button class="summary-button btn" id="7">Long</button>
+    <div style="display: flex; flex-direction: column; justify-content: space-evenly; align-items: center; width: 100vw; min-width: 200px;">
+        <button class="btn" id="3">Short Summary</button>
+        <button class="btn" id="5">Medium Summary</button>
+        <button class="btn" id="7">Long Summary</button>
         <script src="choose_length_page.js"></script>
     </div>
 </body>
