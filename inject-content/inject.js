@@ -18,18 +18,35 @@
         const outerDivID = "rstudios-web-extension-summarizer-88A178C0FD69FEDDB3ACFD0F5234D949AB2EE6543718774D5E2D331BF8376B99-fruit-jam-4EEC889A8A3E73A7BF00773FDD16AC859E7AEF517673DFD7C143BC327CBBC30C";
 
         if (!document.getElementById(outerDivID)) {
+
+            const cleanslateCSS_ID = "rstudios-web-extension-summarizer-cleanslate-CSS";
+
+            if (!document.getElementById(cleanslateCSS_ID)) {
+                var head = document.getElementsByTagName("head")[0];
+                var link = document.createElement("link");
+                link.id = cleanslateCSS_ID;
+                link.rel = "stylesheet";
+                link.type = "text/css";
+                link.href = browser.extension.getURL("inject-content/cleanslate.css");
+                head.appendChild(link);
+            }
+
             var iFrame = document.createElement("iFrame");
             iFrame.id = "contentFrame";
-            iFrame.style.cssText = "width: 100%; height: 100%; border: none;";
-            iFrame.src = browser.extension.getURL("inject.html");
+            iFrame.classList.add("cleanslate");
+            iFrame.style.cssText = "width: 100% !important; height: 100% !important; border: none !important;";
+            iFrame.src = browser.extension.getURL("inject-content/inject.html");
 
             var boxDiv = document.createElement("div");
-            boxDiv.style.cssText = "background: white; box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 9px 8px; height: 100%; left: calc(100% - 390px); position: fixed; top: 0px; width: 390px; z-index: 1;"
+            boxDiv.classList.add("cleanslate");
+            boxDiv.style.cssText = "background: white !important; box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 9px 8px !important; height: 100% !important; left: calc(100% - 390px) !important; position: fixed !important; top: 0px !important; width: 390px !important; padding: 0px !important; z-index: 1 !important;"
 
             var zeroDiv = document.createElement("div");
-            zeroDiv.style.cssText = "position: fixed; width: 0px; height: 0px; top: 0px; left: 0px; z-index: 2147483647;";
+            zeroDiv.classList.add("cleanslate");
+            zeroDiv.style.cssText = "position: fixed !important; width: 0px !important; height: 0px !important; top: 0px !important; left: 0px !important; z-index: 2147483647 !important;";
 
             var outerDiv = document.createElement("div");
+            zeroDiv.classList.add("cleanslate");
             outerDiv.id = outerDivID;
 
             boxDiv.appendChild(iFrame);
@@ -47,8 +64,7 @@
                 var copyButton = iFrame.contentWindow.document.getElementById("copy-btn");
 
                 copyButton.addEventListener("click", () => {
-                    console.log("Clicking Copy Button");
-                    var summaryContainer = iFrame.contentWindow.document.getElementById("summary");
+                    let summaryContainer = iFrame.contentWindow.document.getElementById("summary");
                     var textarea_temp = document.createElement("textarea");
                     textarea_temp.style.position = 'fixed';
                     textarea_temp.style.top = 0;
@@ -116,7 +132,7 @@
                         .then(tokenResponseText_initial => {
                             //tokenResponseText_initial = "[SM_g]This[SM_h][SM_g]is[SM_h][SM_g]a[SM_h][SM_g]sentence[SM_h].[SM_l][SM_g]Here[SM_h][SM_g]is[SM_h][SM_g]another[SM_h][SM_g]sentence[SM_h].[SM_1]"
 
-                            //Backup regex: /(\[SM_g].*?)(\[SM_h])((?:[.,?]|\[SM_l]| ?&quot;){0,3})/g 	 | ?\\"
+                            //Backup regex: /(\[SM_g].*?)(\[SM_h])((?:[.,?]|\[SM_l]| ?&quot;){0,3})/g    | ?\\"
 
                             tokenResponseText_processed = tokenResponseText_initial.replace(/(\[SM_g].*?)(\[SM_h])((?:[.,?:!;%*+-<>=@_~^]|\[SM_l]| ?&quot;| ?&#039;| ?\\"){0,3})/g, "$1$3$2");
 
