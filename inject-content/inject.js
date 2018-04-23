@@ -95,21 +95,24 @@
                 updateSummaryBox(message.summaryLength, message.targetURL);
             }
         } else {
-            var summaryBox_no_duplicate = document.getElementById("contentFrame").contentWindow.document.getElementById("summary");
-            summaryBox_no_duplicate.innerHTML = "Loading...";
             updateSummaryBox(message.summaryLength, message.targetURL);
         }
     });
 
     function updateSummaryBox(summaryLength, summaryURL) {
+        var summaryBox_no_duplicate = document.getElementById("contentFrame").contentWindow.document.getElementById("summary");
+        summaryBox_no_duplicate.innerHTML = "Loading...";
+
         returnSummary(summaryLength, summaryURL).then(summary => {
 
             var summaryBox = document.getElementById("contentFrame").contentWindow.document.getElementById("summary");
 
             if (summary.status == "no-error") {
                 summaryBox.innerHTML = summary.summary;
+                summaryBox.style.setProperty("color", "#52575C");
             } else {
                 summaryBox.innerHTML = summary.status;
+                summaryBox.style.setProperty("color", "#9E0E28");
             }
         });
     }
@@ -126,13 +129,9 @@
                     const summaryToken = nonTokenResponseText.match(/TOKEN=(.*?)&/);
                     const summaryTokenCompiledURL = 'https://smmry.com/sm_portal.php?&SM_TOKEN=' + summaryToken[1] + '&SM_POST_SAVE=0&SM_REDUCTION=-1&SM_CHARACTER=-1&SM_LENGTH=' + summaryLength.toString() + '&SM_URL=' + targetURL;
 
-                    //console.log(summaryTokenCompiledURL);
-
                     fetch(summaryTokenCompiledURL).then((tokenSummaryResponse) => tokenSummaryResponse.text())
                         .then(tokenResponseText_initial => {
                             //tokenResponseText_initial = "[SM_g]This[SM_h][SM_g]is[SM_h][SM_g]a[SM_h][SM_g]sentence[SM_h].[SM_l][SM_g]Here[SM_h][SM_g]is[SM_h][SM_g]another[SM_h][SM_g]sentence[SM_h].[SM_1]"
-
-                            //Backup regex: /(\[SM_g].*?)(\[SM_h])((?:[.,?]|\[SM_l]| ?&quot;){0,3})/g    | ?\\"
 
                             tokenResponseText_processed = tokenResponseText_initial.replace(/(\[SM_g].*?)(\[SM_h])((?:[.,?:!;%*+-<>=@_~^]|\[SM_l]| ?&quot;| ?&#039;| ?\\"){0,3})/g, "$1$3$2");
 
@@ -144,7 +143,6 @@
                             do {
                                 wordRegexResponse = wordCompilationRegex.exec(tokenResponseText_processed);
                                 if (wordRegexResponse) {
-                                    //console.log("Word Regex Response: " + wordRegexResponse[1] + "\n -----");
 
                                     wordRegexResponse[1] = wordRegexResponse[1].replace("[SM_l]", "\n\n");
 
@@ -158,7 +156,6 @@
                                 }
                             } while (wordRegexResponse);
 
-                            //Replace all &#039; with apostrophe. This is only a ***temporary*** fix b/c doesn't work with other quirky characters
                             summary = summary.replace(/&#039;/g, '\'');
 
                             resolve(returnSummaryResponse(summary, tokenResponseText_initial));
@@ -171,11 +168,11 @@
         if (summary != "") {
             return { status: 'no-error', summary: summary };
         } else if (rawTokenText.includes('THE PAGE IS IN AN UNRECOGNISABLE FORMAT')) {
-            return { status: 'Error - Unrecognisable Format', summary: null }
+            return { status: 'Error - The Page Is in an Unrecognisable Format', summary: null }
         } else if (rawTokenText.includes('SOURCE IS TOO SHORT')) {
-            return { status: 'Error - Too Short', summary: null };
+            return { status: 'Error - Source Is Too Short', summary: null };
         } else if (rawTokenText.includes('THE PAGE IS TOO LONG TO RETRIEVE')) {
-            return { status: 'Error - Too Long', summary: null };
+            return { status: 'Error - The Page Is Too Long to Retrieve', summary: null };
         } else {
             return { status: 'Error - Unknown Error', summary: null };
         }
