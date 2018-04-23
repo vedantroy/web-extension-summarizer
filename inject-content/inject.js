@@ -99,7 +99,7 @@
         }
     });
 
-    function updateSummaryBox(summaryLength, summaryURL) {
+    const updateSummaryBox = function(summaryLength, summaryURL) {
         var summaryBox_no_duplicate = document.getElementById("contentFrame").contentWindow.document.getElementById("summary");
         summaryBox_no_duplicate.innerHTML = "Loading...";
 
@@ -164,7 +164,7 @@
         });
     };
 
-    function returnSummaryResponse(summary, rawTokenText) {
+    const returnSummaryResponse = function(summary, rawTokenText) {
         if (summary != "") {
             return { status: 'no-error', summary: summary };
         } else if (rawTokenText.includes('THE PAGE IS IN AN UNRECOGNISABLE FORMAT')) {
