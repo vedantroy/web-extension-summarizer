@@ -100,13 +100,11 @@
     });
 
     const updateSummaryBox = function(summaryLength, summaryURL) {
-        var summaryBox_no_duplicate = document.getElementById("contentFrame").contentWindow.document.getElementById("summary");
-        summaryBox_no_duplicate.innerHTML = "Loading...";
 
-        returnSummary(summaryLength, summaryURL).then(summary => {
+        var summaryBox = document.getElementById("contentFrame").contentWindow.document.getElementById("summary");
+        summaryBox.innerHTML = "Loading...";
 
-            var summaryBox = document.getElementById("contentFrame").contentWindow.document.getElementById("summary");
-
+        const summary = returnSummary(summaryLength, summaryURL).then(summary => {
             if (summary.status == "no-error") {
                 summaryBox.innerHTML = summary.summary;
                 summaryBox.style.setProperty("color", "#52575C");
@@ -114,55 +112,55 @@
                 summaryBox.innerHTML = summary.status;
                 summaryBox.style.setProperty("color", "#9E0E28");
             }
+        }, error => {
+        	//summaryBox.innerHTML = error.
         });
     }
 
     const returnSummary = function(summaryLength, targetURL) {
+
+        const nonTokenURL = 'https://smmry.com/' + targetURL + '#&SM_LENGTH=' + summaryLength.toString();
+
         return new Promise((resolve, reject) => {
-
-            const nonTokenURL = 'https://smmry.com/' + targetURL + '#&SM_LENGTH=' + summaryLength.toString();
-
             fetch(nonTokenURL)
                 .then((nonTokenResponse) => nonTokenResponse.text())
                 .then(nonTokenResponseText => {
-
                     const summaryToken = nonTokenResponseText.match(/TOKEN=(.*?)&/);
                     const summaryTokenCompiledURL = 'https://smmry.com/sm_portal.php?&SM_TOKEN=' + summaryToken[1] + '&SM_POST_SAVE=0&SM_REDUCTION=-1&SM_CHARACTER=-1&SM_LENGTH=' + summaryLength.toString() + '&SM_URL=' + targetURL;
+                    return fetch(summaryTokenCompiledURL);
+                }).then((tokenSummaryResponse) => tokenSummaryResponse.text())
+                .then(tokenResponseText_initial => {
+                    tokenResponseText_processed = tokenResponseText_initial.replace(/(\[SM_g].*?)(\[SM_h])((?:[.,?:!;%*+-<>=@_~^]|\[SM_l]| ?&quot;| ?&#039;| ?\\"){0,3})/g, "$1$3$2");
 
-                    fetch(summaryTokenCompiledURL).then((tokenSummaryResponse) => tokenSummaryResponse.text())
-                        .then(tokenResponseText_initial => {
-                            //tokenResponseText_initial = "[SM_g]This[SM_h][SM_g]is[SM_h][SM_g]a[SM_h][SM_g]sentence[SM_h].[SM_l][SM_g]Here[SM_h][SM_g]is[SM_h][SM_g]another[SM_h][SM_g]sentence[SM_h].[SM_1]"
+                    const wordCompilationRegex = /\[SM_g]([\s\S]*?)\[SM_h]/g;
+                    var wordRegexResponse;
 
-                            tokenResponseText_processed = tokenResponseText_initial.replace(/(\[SM_g].*?)(\[SM_h])((?:[.,?:!;%*+-<>=@_~^]|\[SM_l]| ?&quot;| ?&#039;| ?\\"){0,3})/g, "$1$3$2");
+                    var summary = "";
 
-                            const wordCompilationRegex = /\[SM_g]([\s\S]*?)\[SM_h]/g;
-                            var wordRegexResponse;
+                    do {
+                        wordRegexResponse = wordCompilationRegex.exec(tokenResponseText_processed);
+                        if (wordRegexResponse) {
 
-                            var summary = "";
+                            wordRegexResponse[1] = wordRegexResponse[1].replace("[SM_l]", "\n\n");
 
-                            do {
-                                wordRegexResponse = wordCompilationRegex.exec(tokenResponseText_processed);
-                                if (wordRegexResponse) {
+                            wordRegexResponse[1] = wordRegexResponse[1].replace('\\"', '"');
 
-                                    wordRegexResponse[1] = wordRegexResponse[1].replace("[SM_l]", "\n\n");
+                            if (wordRegexResponse[1].includes(" &#039;") || wordRegexResponse[1].includes(" &quot;") || wordRegexResponse[1].includes(" \"")) {
+                                summary += wordRegexResponse[1];
+                            } else {
+                                summary += wordRegexResponse[1] + " ";
+                            }
+                        }
+                    } while (wordRegexResponse);
 
-                                    wordRegexResponse[1] = wordRegexResponse[1].replace('\\"', '"');
+                    summary = summary.replace(/&#039;/g, '\'');
 
-                                    if (wordRegexResponse[1].includes(" &#039;") || wordRegexResponse[1].includes(" &quot;") || wordRegexResponse[1].includes(" \"")) {
-                                        summary += wordRegexResponse[1];
-                                    } else {
-                                        summary += wordRegexResponse[1] + " ";
-                                    }
-                                }
-                            } while (wordRegexResponse);
+                    resolve(returnSummaryResponse(summary, tokenResponseText_initial));
+                })
+                .catch((error) => reject(error));
 
-                            summary = summary.replace(/&#039;/g, '\'');
-
-                            resolve(returnSummaryResponse(summary, tokenResponseText_initial));
-                        });
-                });
         });
-    };
+    }
 
     const returnSummaryResponse = function(summary, rawTokenText) {
         if (summary != "") {
