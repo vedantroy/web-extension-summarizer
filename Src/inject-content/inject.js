@@ -103,17 +103,23 @@
 
         var summaryBox = document.getElementById("contentFrame").contentWindow.document.getElementById("summary");
         summaryBox.innerHTML = "Loading...";
+        summaryBox.style.setProperty("color", "#52575C");
+
 
         const summary = returnSummary(summaryLength, summaryURL).then(summary => {
             if (summary.status == "no-error") {
                 summaryBox.innerHTML = summary.summary;
-                summaryBox.style.setProperty("color", "#52575C");
             } else {
                 summaryBox.innerHTML = summary.status;
                 summaryBox.style.setProperty("color", "#9E0E28");
             }
         }, error => {
-        	//summaryBox.innerHTML = error.
+            if (error.message.includes("NetworkError")) {
+                summaryBox.innerHTML = "Handled Exception: " + error.message + "\nFile Name: " + error.fileName + "\nLine Number: " + error.lineNumber + "\nMessage: This error can happen if your internet connection is blocking access to certain websites, including the one this extension uses to generate summaries.";
+            } else {
+                summaryBox.innerHTML = "Handled Exception: " + error.message + "\nFile Name: " + error.fileName + "\nLine Number: " + error.lineNumber + "\nMessage: This is an unexpected error. Please report the above information to the developer.";
+            }
+            summaryBox.style.setProperty("color", "#9E0E28");
         });
     }
 
@@ -156,9 +162,7 @@
                     summary = summary.replace(/&#039;/g, '\'');
 
                     resolve(returnSummaryResponse(summary, tokenResponseText_initial));
-                })
-                .catch((error) => reject(error));
-
+                }).catch((error) => reject(error));
         });
     }
 
