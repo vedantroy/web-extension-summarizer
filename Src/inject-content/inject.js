@@ -115,9 +115,9 @@
             }
         }, error => {
             if (error.message.includes("NetworkError")) {
-                summaryBox.innerHTML = "Handled Exception: " + error.message + "\nFile Name: " + error.fileName + "\nLine Number: " + error.lineNumber + "\nMessage: This error can happen if your internet connection is blocking access to certain websites, including the one this extension uses to generate summaries.";
+                summaryBox.innerHTML = returnExceptionString(error, "returnSummary()", "This error can happen if your internet connection is blocking access to certain websites, including the one this extension uses to generate summaries.");
             } else {
-                summaryBox.innerHTML = "Handled Exception: " + error.message + "\nFile Name: " + error.fileName + "\nLine Number: " + error.lineNumber + "\nMessage: This is an unexpected error. Please report the above information to the developer.";
+                summaryBox.innerHTML = returnExceptionString(error, "returnSummary()");
             }
             summaryBox.style.setProperty("color", "#9E0E28");
         });
@@ -177,6 +177,15 @@
             return { status: 'Error - The Page Is Too Long to Retrieve', summary: null };
         } else {
             return { status: 'Error - Unknown Error', summary: null };
+        }
+    }
+
+    const returnExceptionString = function(error, methodName, customMessage) {
+        var exceptionString = "Handled Exception: " + error.message + "\nFile: " + error.fileName + "\nMethod: " + methodName + "\nLine: " + error.lineNumber + "\nMessage: ";
+        if (customMessage != undefined) {
+            return exceptionString + customMessage;
+        } else {
+            return exceptionString + "This is an unexpected error. Please report the above information to the developer.";
         }
     }
 })();
