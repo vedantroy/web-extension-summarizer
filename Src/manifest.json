@@ -1,15 +1,13 @@
 {
     "manifest_version": 2,
-    "name": "Summarizer",
-    "version": "1.0",
+    "name": "TL;DR - Summarizer",
+    "version": "3.0",
 
     "description": "Summarizes webpages",
 
     "permissions": [
         "activeTab",
         "tabs",
-        "storage",
-        "downloads",
         "*://*.smmry.com/*"
     ],
 
