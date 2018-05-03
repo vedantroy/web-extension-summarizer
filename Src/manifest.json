@@ -28,7 +28,8 @@
     },
 
     "web_accessible_resources": [
-        "inject-content/inject.html"
+        "inject-content/inject.html",
+        "inject-content/cleanslate.css"
     ],
 
     "content_security_policy": "script-src 'self' 'sha256-AeZmmPP/9ueCrodQPplotiV3Pw0YW4QqifjUL7NE248='; object-src 'self'"

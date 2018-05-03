@@ -1,15 +1,13 @@
+//Enable the polyfill for the content script and execute it in the current tab
 
-/**
- * When the popup loads, inject a content script into the active tab,
- * and add a click handler.
- */
+browser.tabs.executeScript({ file: "/polyfills/browser-polyfill.js" }).then(loadContentScript).catch((error) => logError(error));
 
-browser.tabs.executeScript({ file: "../inject-content/inject.js" })
-    .then(listenForClicks);
+function loadContentScript() {
+    browser.tabs.executeScript({ file: "/inject-content/inject.js" }).then(listenForClicks).catch((error) => logError(error));
+}
 
 function listenForClicks() {
     document.addEventListener('click', e => {
-
         if (!e.target.classList.contains('btn')) {
             return;
         } else {
@@ -19,4 +17,8 @@ function listenForClicks() {
                 });
         }
     });
+}
+
+function logError(error) {
+    console.log(error);
 }
