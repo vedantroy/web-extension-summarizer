@@ -1,3 +1,4 @@
+var perfectScrollbar = new PerfectScrollbar("#container", { suppressScrollX: true });
 var copyButton = document.getElementById("copy-btn");
 
 copyButton.addEventListener("click", () => {
@@ -32,5 +33,20 @@ copyButton.addEventListener("click", () => {
 var closeButton = document.getElementById("close-btn");
 
 closeButton.addEventListener("click", () => {
-    window.parent.postMessage("summarizer-web-extension-close", "*");
+    window.parent.postMessage("summarizer-web-extension-action-close", "*");
 });
+
+//        summaryBox.style.setProperty("color", "#52575C");
+
+window.addEventListener("message", () => {
+    if (event.data.specialStatus == "awaiting-response") {
+        window.parent.postMessage("summarizer-web-extension-status-retrieve-summary", "*");
+    }
+
+    var summaryBox = document.getElementById("summary");
+
+    summaryBox.innerHTML = event.data.message;
+    summaryBox.style.setProperty("color", event.data.color);
+});
+
+window.parent.postMessage("summarizer-web-extension-status-firstLoadFinished", "*");

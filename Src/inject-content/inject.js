@@ -1,4 +1,5 @@
 (function() {
+
     /**
      * Check and set a global guard variable.
      * If this content script is injected into the same page again,
@@ -8,6 +9,10 @@
         return;
     }
     window.hasRun = true;
+
+    var currentURL;
+    var currentLength;
+    const colorHex = { normal: "#52575C", error: "#9E0E28" };
 
     /**
      * Listen for messages from the background script.
@@ -55,84 +60,44 @@
             document.body.appendChild(outerDiv);
 
             window.addEventListener("message", () => {
-                if (event.data == "summarizer-web-extension-close") {
+                if (event.data == "summarizer-web-extension-action-close") {
                     document.getElementById(outerDivID).remove();
+                } else if (event.data == "summarizer-web-extension-status-firstLoadFinished") {
+                    updateSummaryBox(message.summaryLength, message.targetURL);
+                } else if (event.data == "summarizer-web-extension-status-retrieve-summary") {
+                    var iFrameWindow = document.getElementById("contentFrame").contentWindow;
+
+                    const summary = returnSummary(currentLength, currentURL).then(summary => {
+                        if (summary.status == "no-error") {
+                            iFrameWindow.postMessage({ color: colorHex.normal, message: summary.summary }, "*");
+                        } else {
+                            iFrameWindow.postMessage({ color: colorHex.error, message: summary.status }, "*");
+                        }
+                    }, error => {
+                        var errorString;
+                        if (error.message.includes("NetworkError")) {
+                            errorString = returnExceptionString(error, "returnSummary()", "This error can happen if your internet connection is blocking access to certain websites, including the one this extension uses to generate summaries.");
+                        } else {
+                            errorString = returnExceptionString(error, "returnSummary()");
+                        }
+                        iFrameWindow.postMessage({ color: colorHex.error, message: errorString }, "*");
+                    });
                 }
             }, false);
 
-            /*
-
-            iFrame.onload = () => {
-                var closeButton = iFrame.contentWindow.document.getElementById("close-btn");
-
-                closeButton.addEventListener("click", () => {
-                    outerDiv.remove();
-                });
-
-                var copyButton = iFrame.contentWindow.document.getElementById("copy-btn");
-
-                copyButton.addEventListener("click", () => {
-                    let summaryContainer = iFrame.contentWindow.document.getElementById("summary");
-                    var textarea_temp = document.createElement("textarea");
-                    textarea_temp.style.position = 'fixed';
-                    textarea_temp.style.top = 0;
-                    textarea_temp.style.left = 0;
-                    textarea_temp.style.width = '2em';
-                    textarea_temp.style.height = '2em';
-                    textarea_temp.style.padding = 0;
-                    textarea_temp.style.border = 'none';
-                    textarea_temp.style.outline = 'none';
-                    textarea_temp.style.boxShadow = 'none';
-                    textarea_temp.style.background = 'transparent';
-                    textarea_temp.value = summaryContainer.innerHTML;
-                    document.body.appendChild(textarea_temp);
-                    textarea_temp.focus();
-                    textarea_temp.select();
-                    try {
-                        var successful = document.execCommand('copy');
-                        var msg = successful ? 'successful' : 'unsuccessful';
-                        console.log('Copying text command was ' + msg);
-                    } catch (error) {
-                        console.log('Error: ' + error);
-                    }
-
-                    document.body.removeChild(textarea_temp);
-
-                });
-
-                updateSummaryBox(message.summaryLength, message.targetURL);
-            }
-
-            */
         } else {
-            /*
             updateSummaryBox(message.summaryLength, message.targetURL);
-            */
         }
     });
 
     const updateSummaryBox = function(summaryLength, summaryURL) {
 
-        var summaryBox = document.getElementById("contentFrame").contentWindow.document.getElementById("summary");
-        summaryBox.innerHTML = "Loading...";
-        summaryBox.style.setProperty("color", "#52575C");
+        var iFrameWindow = document.getElementById("contentFrame").contentWindow;
 
+        currentLength = summaryLength;
+        currentURL = summaryURL;
 
-        const summary = returnSummary(summaryLength, summaryURL).then(summary => {
-            if (summary.status == "no-error") {
-                summaryBox.innerHTML = summary.summary;
-            } else {
-                summaryBox.innerHTML = summary.status;
-                summaryBox.style.setProperty("color", "#9E0E28");
-            }
-        }, error => {
-            if (error.message.includes("NetworkError")) {
-                summaryBox.innerHTML = returnExceptionString(error, "returnSummary()", "This error can happen if your internet connection is blocking access to certain websites, including the one this extension uses to generate summaries.");
-            } else {
-                summaryBox.innerHTML = returnExceptionString(error, "returnSummary()");
-            }
-            summaryBox.style.setProperty("color", "#9E0E28");
-        });
+        iFrameWindow.postMessage({ color: colorHex.normal, message: "Loading...", specialStatus: "awaiting-response" }, "*");
     }
 
     const returnSummary = function(summaryLength, targetURL) {
