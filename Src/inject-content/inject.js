@@ -54,6 +54,14 @@
             outerDiv.appendChild(zeroDiv);
             document.body.appendChild(outerDiv);
 
+            window.addEventListener("message", () => {
+                if (event.data == "summarizer-web-extension-close") {
+                    document.getElementById(outerDivID).remove();
+                }
+            }, false);
+
+            /*
+
             iFrame.onload = () => {
                 var closeButton = iFrame.contentWindow.document.getElementById("close-btn");
 
@@ -94,8 +102,12 @@
 
                 updateSummaryBox(message.summaryLength, message.targetURL);
             }
+
+            */
         } else {
+            /*
             updateSummaryBox(message.summaryLength, message.targetURL);
+            */
         }
     });
 

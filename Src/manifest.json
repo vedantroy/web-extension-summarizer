@@ -2,20 +2,16 @@
     "manifest_version": 2,
     "name": "TL;DR - Summarizer",
     "version": "3.0",
-
     "description": "Summarizes webpages",
-
     "permissions": [
         "activeTab",
         "tabs",
         "*://*.smmry.com/*"
     ],
-
     "icons":
     {
         "48": "icons/border-48.png"
     },
-
     "browser_action":
     {
         "browser_style": true,
@@ -26,12 +22,20 @@
             "32": "icons/summarizer-icon-32.png"
         }
     },
-
+    "content_scripts": [
+    {
+        "run_at": "document_end",
+        "js": [
+            "polyfills/browser-polyfill.js",
+            "inject-content/inject.js"
+        ],
+        "matches": [
+            "*://*/*"
+        ]
+    }],
     "web_accessible_resources": [
         "inject-content/inject.html",
         "inject-content/cleanslate.css"
     ],
-
     "content_security_policy": "script-src 'self' 'sha256-AeZmmPP/9ueCrodQPplotiV3Pw0YW4QqifjUL7NE248='; object-src 'self'"
-
 }
