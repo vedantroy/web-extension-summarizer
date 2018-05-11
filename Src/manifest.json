@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
-  "name": "TL;DR - Summarizer",
-  "version": "3.0",
+  "name": "TL;DR - Webpage Summarizer",
+  "version": "4.0",
   "description": "Summarizes webpages",
   "permissions": [
     "activeTab",
