@@ -1,0 +1,1 @@
+A browser extension for Firefox and Chrome that summarizes webpages. Uses ES6 promises for modern, clean code.
